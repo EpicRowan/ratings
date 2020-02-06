@@ -18,6 +18,18 @@ app.secret_key = "ABC"
 # error.
 app.jinja_env.undefined = StrictUndefined
 
+@app.route("/users/<int:user_id>")
+def user_info(user_id):
+    
+    user = User.query.get(user_id)
+    # user.ratings
+    user_ratings = Rating.query.filter_by(user_id=user_id).all()
+    
+
+    print(user.email)
+
+    return render_template("user_info.html", user=user, user_ratings=user_ratings)
+
 
 @app.route("/users")
 def user_list():
@@ -64,6 +76,9 @@ def user_login():
 
     email = request.form.get('email')
     password = request.form.get('password')
+    # test = request.form['test']
+
+    # print(test)
 
     user_email = User.query.filter_by(email=email).first()
     # user_password = User.query.filter_by(password=password).first()
@@ -74,11 +89,20 @@ def user_login():
     
     else:
         if user_email.password == password:
+            session['current_user'] = user_email.email
             flash('LOGGED IN!!!')
             return redirect("/")
         else:
             flash('WRONG PASSWORD!!!')
             return redirect('/login')
+
+@app.route("/logout")
+def user_logout():
+
+        del session['current_user']
+
+        flash('LOGGED OUT!!!')
+        return redirect("/")
 
 
 @app.route('/')
